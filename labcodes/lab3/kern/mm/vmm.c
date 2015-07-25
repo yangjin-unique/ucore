@@ -307,7 +307,6 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     //try to find a vma which include addr
     struct vma_struct *vma = find_vma(mm, addr);
 
-    cprintf("ken: do pgfault\n\n");
     pgfault_num++;
     //If the addr is in the range of a mm's vma?
     if (vma == NULL || vma->vm_start > addr) {
@@ -370,16 +369,18 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
         cprintf("get_pte failed\n");
         goto failed;
     }
-    if (*ptep == 0) {
+    if (*ptep == 0) { /* allolc a new page, some pages should be swapped out if there is no free page */
         struct Page *page;
-        page = pgdir_alloc_page(mm->pgdir, addr, perm);
+        cprintf("ken: page fault (addr=%x)- page not exist, alloc a page\n\n", addr);
+        page = pgdir_alloc_page(mm->pgdir, addr, perm); /* here we may call swap out to get new page */
         if (page == NULL) {
             cprintf("alloc page failed\n");
             goto failed;
         }
     }
-    else {
+    else { /* this page has been swapped out, now swap it in */
         if (swap_init_ok) {
+            cprintf("ken: page fault (addr=%x)- page need swapped in\n\n", addr);
             struct Page *page;
             ret = swap_in(mm, addr, &page); 
             if (ret != 0) {
