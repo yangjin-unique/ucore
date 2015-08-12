@@ -299,15 +299,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
      *   proc_list:    the process set's list
      *   nr_process:   the number of process set
      */
-
-    //    1. call alloc_proc to allocate a proc_struct
-    //    2. call setup_kstack to allocate a kernel stack for child process
-    //    3. call copy_mm to dup OR share mm according clone_flag
-    //    4. call copy_thread to setup tf & context in proc_struct
-    //    5. insert proc_struct into hash_list && proc_list
-    //    6. call wakup_proc to make the new child process RUNNABLE
-    //    7. set ret vaule using child proc's pid
-    proc = alloc_proc();
+     proc = alloc_proc();
     if (!proc) goto fork_out;
     if (setup_kstack(proc) != 0) {
         goto bad_fork_cleanup_kstack;
